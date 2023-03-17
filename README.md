@@ -1,10 +1,14 @@
 # freelancer-devoted
-extract data from devotedcolumbus
+* extract data from devotedcolumbus
 
-# Basically just type in the console for example `node main.js vendor-full-data` and it will pull the data from venues part. 
+
+## Instructions
+
+* Basically just type in the console for example `node main.js vendor-full-data` and it will pull the data from venues part. 
 Also you have the commands `venues-full-data` or `blog-full-data`. The files will be downloaded at the static folder.
 
 
+## Output help command list:
 
 Usage: pull data https://www.devotedcolumbus.com [options] [command]
 
