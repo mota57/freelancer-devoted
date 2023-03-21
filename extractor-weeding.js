@@ -82,14 +82,24 @@ async function getVendorMetaData(urls) {
   const axios = require('axios');
 
   const dataList = [];
+  const requests = urls.map((url) => axios.get(`${url}`));
+
+  const responses = await Promise.all(requests);
+  const htmls = responses.map((response) => response);
 
   for (let index = 0; index < urls.length; index++) {
+    const html = htmls[index];
     const url = urls[index];
-
-    const html = await axios.get(`${url}`);
     const dom = new JSDOM(html.data);
     const document = dom.window.document;
+    const record = parseVendorMetaData(url, document);
+    dataList.push(record);
+    console.log(`TOTAL VENDOR META DATA COMPLETED ${index} FROM ${urls.length} (url: ${url})`);
+  }
+  return dataList;
 
+  // eslint-disable-next-line require-jsdoc
+  function parseVendorMetaData(url, document) {
     const record = {};
     record.vendorMainUrl = `${url}`;
     try {
@@ -100,11 +110,8 @@ async function getVendorMetaData(urls) {
     } catch (e) {
       console.error(e);
     }
-    dataList.push(record);
-    console.log(`TOTAL COMPLETED ${index} FROM ${urls.length} (url: ${url})`);
+    return record;
   }
-  return dataList;
-
 }
 
 /**
@@ -170,17 +177,26 @@ async function getDetailData(urls) {
   console.log('url:: ', urls[0]);
 
   const dataList = [];
-
   const axios = require('axios');
+  const requests = urls.map((url) => axios.get(`${domain}${url}`));
 
+  const responses = await Promise.all(requests);
+  const htmls = responses.map((response) => response);
 
-  for (let index = 0; index < urls.length; index++) {
+  for (let index = 0; index < htmls.length; index++) {
+    const html = htmls[index];
     const url = urls[index];
-
-    const html = await axios.get(`${domain}${url}`);
     const dom = new JSDOM(html.data);
     const document = dom.window.document;
+    const record = parseDetailData(url, document);
+    dataList.push(record);
+    console.log(`TOTAL COMPLETED ${index} FROM ${urls.length} (url: ${url})`);
+  }
 
+  return dataList;
+
+  // eslint-disable-next-line require-jsdoc
+  function parseDetailData(url, document) {
     const record = {};
     record.url = `${domain}${url}`;
     try {
@@ -201,6 +217,8 @@ async function getDetailData(urls) {
 
       record.socialMedia = [...document.querySelectorAll('body > div.d-sec.secondary-top > div.d-social-icons a.l-social.w-inline-block')].filter((x) => !x.classList.contains('w-condition-invisible')).map((x) => x.href);
 
+      record.facebookGroups = [...document.querySelectorAll('a.facebook-groups')].filter((x) => !x.classList.contains('w-condition-invisible')).map((x) => x.href);
+
       record.imageRight = [...document.querySelectorAll('body > div.d-sec.secondary-top > div.d-vendor-top-content > div:nth-child(2) > div:nth-child(3) > div > div.c-vendor-multi-image-list.w-dyn-items img')].map((el) => el.src);
 
       record.textLeft = [...document.querySelectorAll('p.p-vendor-description')].map((el) => el.textContent).join('\n ');
@@ -211,11 +229,6 @@ async function getDetailData(urls) {
     } catch (e) {
       console.error(e);
     }
-
-    dataList.push(record);
-    console.log(`TOTAL COMPLETED ${index} FROM ${urls.length} (url: ${url})`);
+    return record;
   }
-
-  return dataList;
-
 }
